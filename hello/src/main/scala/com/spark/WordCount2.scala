@@ -3,7 +3,7 @@ package com.spark
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 
-object WordCount {
+object WordCount2 {
   def main(args: Array[String]): Unit = {
     val sparkConf = new SparkConf().setMaster("local").setAppName("WordCount")
     val sc = new SparkContext(sparkConf)
@@ -22,24 +22,34 @@ object WordCount {
     *  */
     val words: RDD[String] = lines.flatMap(line => line.split(" "))
     
+    // 分词之后统计各个单词数量
+    /*
+    * hello world => (hello, 1), (world, 1)
+    * hello world => (hello, 1), (world, 1)
+    *  */
+    val wordToOne: RDD[(String, Int)] = words.map(word => (word, 1))
+    
     // 根据单词进行分组
     /*
-    * (hello, hello), (world, world)
+    * (hello, ((hello, 1), (hello, 1))), (world, ((world, 1), (world, 1)))
     *  */
-    val wordGroup: RDD[(String, Iterable[String])] = words.groupBy(word => word)
+    val wordGroup: RDD[(String, Iterable[(String, Int)])] = wordToOne.groupBy(t => t._1)
     
     // 聚合分组之后的数据
     /*
     * (hello, 2), (world, 2)
     *  */
     val wordToCount: RDD[(String, Int)] = wordGroup.map {
-      case (word, list) =>
-        (word, list.size)
+      case (word, list) => {
+        list.reduce((t1, t2) => (t1._1, t1._2 + t2._2))
+      }
     }
     
     // 输出结果
     val arr: Array[(String, Int)] = wordToCount.collect()
     arr.foreach(println)
+    // (hello,2)
+    // (world,2)
     
     sc.stop()
   }
