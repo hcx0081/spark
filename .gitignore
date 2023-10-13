@@ -6,6 +6,7 @@ hello/target/
 ### IntelliJ IDEA ###
 .idea
 *.iml
+target
 
 ### Eclipse ###
 .apt_generated

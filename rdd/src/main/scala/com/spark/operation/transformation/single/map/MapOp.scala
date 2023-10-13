@@ -1,4 +1,4 @@
-package com.spark.operation
+package com.spark.operation.transformation.single.map
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}

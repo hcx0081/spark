@@ -24,8 +24,8 @@ object WordCountByReduceByKey {
     
     // 分词之后统计各个单词数量
     /*
-    * hello world => (hello, 1), (world, 1)
-    * hello world => (hello, 1), (world, 1)
+    * hello, world => (hello, 1), (world, 1)
+    * hello, world => (hello, 1), (world, 1)
     *  */
     val wordToOne: RDD[(String, Int)] = words.map(word => (word, 1))
     
