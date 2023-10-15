@@ -10,11 +10,11 @@ object FlatMapOp {
     
     val rdd: RDD[List[Int]] = sc.makeRDD(List(List(1, 2), List(3, 4, 5)), 2)
     
-    val mapRdd: RDD[List[Int]] = rdd.map(list => list)
+    // val mapRdd: RDD[List[Int]] = rdd.map(list => list)
     // List(1, 2)
     // List(3, 4, 5)
     
-    // val mapRdd: RDD[Int] = rdd.flatMap(list => list)
+    val mapRdd: RDD[Int] = rdd.flatMap(list => list)
     // 1
     // 2
     // 3

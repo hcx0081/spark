@@ -13,7 +13,7 @@ object WordCountByReduceByKey {
     * hello world
     * hello world
     *  */
-    val lines: RDD[String] = sc.textFile("hello/src/main/resources/1.txt")
+    val lines: RDD[String] = sc.textFile("hello/src/main/resources/hello.txt")
     
     // 拆分一行一行的数据，形成一个一个的单词（分词）
     /*
