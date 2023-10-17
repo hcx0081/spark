@@ -10,7 +10,7 @@ object CountByValueOp {
     
     val rdd: RDD[(String, Int)] = sc.makeRDD(List(
       ("a", 1), ("a", 2), ("b", 1), ("b", 2), ("b", 3)
-      ), 2)
+    ), 2)
     
     val countByValueRdd: collection.Map[(String, Int), Long] = rdd.countByValue()
     

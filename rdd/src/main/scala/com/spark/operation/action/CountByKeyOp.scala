@@ -10,7 +10,7 @@ object CountByKeyOp {
     
     val rdd: RDD[(String, Int)] = sc.makeRDD(List(
       ("a", 1), ("a", 2), ("b", 1), ("b", 2), ("b", 3)
-      ), 2)
+    ), 2)
     
     val countByKeyRdd: collection.Map[String, Long] = rdd.countByKey()
     

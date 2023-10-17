@@ -7,11 +7,11 @@ object CombineByKeyOp {
   def main(args: Array[String]): Unit = {
     val sparkConf = new SparkConf().setMaster("local[*]").setAppName("CombineByKeyOp")
     val sc = new SparkContext(sparkConf)
-
+    
     val rdd: RDD[(String, Int)] = sc.makeRDD(List(
       ("a", 1), ("a", 2), ("b", 1), ("b", 2), ("b", 3)
     ), 2)
-
+    
     val combineByKeyRdd: RDD[(String, Int)] = rdd.combineByKey(
       v => {
         v * 100
@@ -23,11 +23,11 @@ object CombineByKeyOp {
         x + y
       }
     )
-
+    
     combineByKeyRdd.collect().foreach(println)
     // (b,100)
     // (a,100)
-
+    
     sc.stop()
   }
 }

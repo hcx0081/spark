@@ -13,7 +13,7 @@ object AggregateOp {
     val aggregateRdd: Int = rdd.aggregate(100)((x, y) => math.max(x, y), (x, y) => x + y)
     
     println(aggregateRdd)
-    // 600
+    // 300
     
     sc.stop()
   }
