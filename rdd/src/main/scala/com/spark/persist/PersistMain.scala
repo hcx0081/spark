@@ -23,6 +23,8 @@ object PersistMain {
     val groupByKeyRdd: RDD[(String, Iterable[Int])] = wordOne.groupByKey()
     groupByKeyRdd.collect().foreach(println)
     
+    sc.stop()
+    
     // ----
     // ----
     // ----

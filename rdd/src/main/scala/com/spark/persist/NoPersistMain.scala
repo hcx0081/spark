@@ -7,6 +7,7 @@ object NoPersistMain {
   def main(args: Array[String]): Unit = {
     val sparkConf = new SparkConf().setMaster("local[*]").setAppName("NoPersistMain")
     val sc = new SparkContext(sparkConf)
+    
     val rdd: RDD[String] = sc.makeRDD(List("Hello World", "Hello Spark"))
     val words: RDD[String] = rdd.flatMap(_.split(" "))
     val wordOne: RDD[(String, Int)] = words.map(word => {
@@ -19,6 +20,8 @@ object NoPersistMain {
     
     val groupByKeyRdd: RDD[(String, Iterable[Int])] = wordOne.groupByKey()
     groupByKeyRdd.collect().foreach(println)
+    
+    sc.stop()
     
     // ----
     // ----
