@@ -23,5 +23,7 @@ object RddAndDataFrame {
     val rdd: RDD[Row] = df.rdd
     
     rdd.collect().foreach(println)
+    
+    spark.stop()
   }
 }
