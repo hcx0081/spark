@@ -1,7 +1,7 @@
 package com.spark.readAndWrite
 
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 import java.util.Properties
 
@@ -24,7 +24,7 @@ object MySQLOp {
     // |  ww| 20|
     // +----+---+
     
-    df.write.jdbc("jdbc:mysql://localhost:3306/spark?serverTimezone=UTC", "temp_user", prop)
+    df.write.mode(SaveMode.Append).jdbc("jdbc:mysql://localhost:3306/spark?serverTimezone=UTC", "temp_user", prop)
     
     spark.stop()
   }
