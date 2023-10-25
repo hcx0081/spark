@@ -8,7 +8,7 @@ object HelloMain {
     val sparkConf = new SparkConf().setMaster("local[*]").setAppName("HelloMain")
     val spark = SparkSession.builder().config(sparkConf).getOrCreate()
     
-    val df: DataFrame = spark.read.json("data-DataFrameAndDataset/user.json")
+    val df: DataFrame = spark.read.json("data-sql/user.json")
     
     // df.show()
     // +---+--------+

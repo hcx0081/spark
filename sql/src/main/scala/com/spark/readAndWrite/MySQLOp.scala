@@ -9,7 +9,6 @@ object MySQLOp {
   def main(args: Array[String]): Unit = {
     val sparkConf = new SparkConf().setMaster("local[*]").setAppName("MySQLOp")
     val spark = SparkSession.builder().config(sparkConf).getOrCreate()
-    // import spark.implicits._
     
     val prop = new Properties()
     prop.setProperty("user", "root")

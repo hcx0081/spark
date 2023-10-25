@@ -13,7 +13,7 @@ object WordCount1 {
     * hello world
     * hello world
     *  */
-    val lines: RDD[String] = sc.textFile("data-RDD/hello.txt")
+    val lines: RDD[String] = sc.textFile("data-core/hello.txt")
     
     // 拆分一行一行的数据，形成一个一个的单词（分词）
     /*
