@@ -1,18 +1,72 @@
 package com.spark.core
 
 import org.apache.spark.rdd.RDD
+import org.apache.spark.util.AccumulatorV2
 import org.apache.spark.{SparkConf, SparkContext}
+
+import scala.collection.mutable
 
 object ShopMain {
   // 需求编号
   var number = 1
   
   def main(args: Array[String]): Unit = {
+    /*
+    * 统计top10热门品类（点击数量 > 下单数量 > 支付数量）
+    *  */
     if (number == 1) {
-      number1Method2()
+      number1Method3()
     }
     if (number == 2) {
     }
+  }
+  
+  // 没有shuffle，性能更好
+  def number1Method3(): Unit = {
+    val sparkConf: SparkConf = new SparkConf().setMaster("local[*]").setAppName("ShopMain")
+    val sc = new SparkContext(sparkConf)
+    
+    // 日期 用户ID SessionID 页面ID 动作时间 搜索关键字,点击品类ID,产品ID,下单品类ID,产品ID,支付品类ID,产品ID,城市ID
+    val actionRdd: RDD[String] = sc.textFile("data-core/user_visit_action.txt")
+    actionRdd.cache()
+    
+    val acc = new MyAccumulator
+    sc.register(acc)
+    
+    actionRdd.foreach(action => {
+      val data: Array[String] = action.split("_")
+      if (data(6) != "-1") {
+        acc.add((data(6), "click"))
+      } else if (data(8) != "null") {
+        val cids = data(8)
+        val cidArr: Array[String] = cids.split(",")
+        cidArr.foreach(id => acc.add(id, "order"))
+      } else if (data(10) != "null") {
+        val cids = data(10)
+        val cidArr: Array[String] = cids.split(",")
+        cidArr.foreach(id => acc.add(id, "pay"))
+      }
+    })
+    
+    val hotCategory: Iterable[HotCategory] = acc.value.values
+    val sortedList: List[HotCategory] = hotCategory.toList.sortWith((left, right) => {
+      if (left.clickCount > right.clickCount) {
+        true
+      } else if (left.clickCount == right.clickCount) {
+        if (left.orderCount > right.orderCount) {
+          true
+        } else if (left.orderCount == right.orderCount) {
+          left.payCount > right.payCount
+        } else {
+          false
+        }
+      } else {
+        false
+      }
+    })
+    sortedList.take(10).foreach(println)
+    
+    sc.stop()
   }
   
   def number1Method2(): Unit = {
@@ -23,9 +77,6 @@ object ShopMain {
     val actionRdd: RDD[String] = sc.textFile("data-core/user_visit_action.txt")
     actionRdd.cache()
     
-    /*
-    * 统计top10热门品类（点击数量 > 下单数量 > 支付数量）
-    *  */
     // 统计品类的点击数量
     val flatRdd: RDD[(String, (Int, Int, Int))] = actionRdd.flatMap(action => {
       val data: Array[String] = action.split("_")
@@ -60,9 +111,6 @@ object ShopMain {
     val actionRdd: RDD[String] = sc.textFile("data-core/user_visit_action.txt")
     actionRdd.cache()
     
-    /*
-    * 统计top10热门品类（点击数量 > 下单数量 > 支付数量）
-    *  */
     // 统计品类的点击数量
     val clickActionRdd: RDD[String] = actionRdd.filter(action => {
       val data: Array[String] = action.split("_")
@@ -156,6 +204,54 @@ object ShopMain {
   }
 }
 
+/*
+* IN: (品类ID, 行为类型)
+* OUT: (品类ID, (点击数量, 下单数量, 支付数量))
+*  */
+class MyAccumulator extends AccumulatorV2[(String, String), mutable.Map[String, HotCategory]] {
+  private var hcMap = mutable.Map[String, HotCategory]()
+  
+  override def isZero: Boolean = hcMap.isEmpty
+  
+  override def copy(): AccumulatorV2[(String, String), mutable.Map[String, HotCategory]] = new MyAccumulator
+  
+  override def reset(): Unit = hcMap.clear()
+  
+  override def add(v: (String, String)): Unit = {
+    val cid: String = v._1
+    val actionType: String = v._2
+    val hotCategory: HotCategory = hcMap.getOrElse(cid, HotCategory(cid, 0, 0, 0))
+    if (actionType == "click") {
+      hotCategory.clickCount += 1
+    }
+    if (actionType == "order") {
+      hotCategory.orderCount += 1
+    }
+    if (actionType == "pay") {
+      hotCategory.payCount += 1
+    }
+    hcMap.update(cid, hotCategory)
+  }
+  
+  override def merge(other: AccumulatorV2[(String, String), mutable.Map[String, HotCategory]]): Unit = {
+    var map1 = this.value
+    var map2 = other.value
+    
+    map2.foreach {
+      case (cid, hc) => {
+        val hotCategory: HotCategory = map1.getOrElse(cid, HotCategory(cid, 0, 0, 0))
+        hotCategory.clickCount += hc.clickCount
+        hotCategory.orderCount += hc.orderCount
+        hotCategory.payCount += hc.payCount
+        map1.update(cid, hotCategory)
+      }
+    }
+  }
+  
+  override def value: mutable.Map[String, HotCategory] = hcMap
+}
+
+case class HotCategory(cid: String, var clickCount: Int, var orderCount: Int, var payCount: Int)
 
 // 用户访问动作表
 case class UserVisitAction(
